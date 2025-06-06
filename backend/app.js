@@ -1,9 +1,9 @@
 import express from 'express';
 import cors from 'cors';
-import connectDB from './config';
-import authRoutes from './routes/authRoutes';
-import venueRoutes from './routes/venueRoutes';
-import reviewRoutes from './routes/reviewRoutes';
+import connectDB from './config.js';
+import authRoutes from './routes/authRoutes.js';
+import venueRoutes from './routes/venueRoutes.js';
+import reviewRoutes from './routes/reviewRoutes.js';
 
 const app = express();
 connectDB();

@@ -8,7 +8,8 @@ const venueSchema = new mongoose.Schema({
   themes: [String],
   ageGroups: [String],
   description: String,
-  imageUrl: String
+  imageUrl: String,
+  averageRating: { type: Number, default: 0 }
 });
 
 const Venue = mongoose.model('Venue', venueSchema);

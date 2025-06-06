@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
-import { JWT_SECRET } from '../config.js';
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Check if token exists and is valid
 export const protect = (req, res, next) => {

@@ -1,5 +1,24 @@
 import Venue from '../models/Venue.js';
 
+// создание новой локации
+export const createVenue = async (req, res) => {
+  try {
+    const venueData = req.body;
+
+    const newVenue = new Venue({
+      ...venueData,
+      owner: req.user._id, // присваиваем владельца из токена
+    });
+
+    await newVenue.save();
+
+    res.status(201).json(newVenue);
+  } catch (error) {
+    console.error('Ошибка при создании локации:', error);
+    res.status(500).json({ message: 'Не удалось создать локацию' });
+  }
+};
+
 // Получение списка локаций с фильтрацией
 export const getVenues = async (req, res) => {
   try {
@@ -44,15 +63,21 @@ export const getVenues = async (req, res) => {
   }
 };
 
-// Получение конкретной локации по ID
+// Получение конкретной локации и отзывов по ID
 export const getVenueById = async (req, res) => {
   try {
     const { id } = req.params;
     const venue = await Venue.findById(id);
 
-    if (!venue) return res.status(404).json({ message: 'Venue not found' });
+    if (!venue) {
+      return res.status(404).json({ message: 'Venue not found' });
+    }
 
-    res.json(venue);
+    const reviews = await Review.find({ venueId: id })
+      .populate('userId', 'name') // подтягиваем имя пользователя
+      .sort({ createdAt: -1 });   // сортируем: свежие — выше
+
+    res.json({ venue, reviews }); // возвращаем оба
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });

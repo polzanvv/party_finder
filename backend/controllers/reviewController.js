@@ -3,16 +3,20 @@ import Review from '../models/Review.js';
 // Добавление отзыва
 export const addReview = async (req, res) => {
   try {
-    const { venueId, userId, rating, comment } = req.body;
+    const { venueId, rating, comment } = req.body;
+    const userId = req.user._id;
 
-    if (!venueId || !userId || !rating) {
-      return res.status(400).json({ message: 'Venue ID, User ID, and rating are required' });
+    if (!venueId || !rating) {
+      return res
+        .status(400)
+        .json({ message: 'Venue ID and rating are required' });
     }
 
-    // Можно добавить проверку: один пользователь — один отзыв на локацию (по желанию)
     const existingReview = await Review.findOne({ venueId, userId });
     if (existingReview) {
-      return res.status(400).json({ message: 'You have already reviewed this venue' });
+      return res
+        .status(400)
+        .json({ message: 'You have already reviewed this venue' });
     }
 
     const newReview = new Review({
@@ -24,7 +28,18 @@ export const addReview = async (req, res) => {
 
     await newReview.save();
 
-    res.status(201).json(newReview);
+    // Update average rating
+    const reviews = await Review.find({ venueId });
+    const avgRating =
+      reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+
+    await Venue.findByIdAndUpdate(venueId, { averageRating: avgRating });
+
+    res.status(201).json({
+      message: 'Review added successfully',
+      review: newReview,
+      averageRating: avgRating
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
