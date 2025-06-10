@@ -2,6 +2,24 @@ import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+export const protectOptional = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1];
+
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = decoded;
+    } catch (error) {
+      // Неудачная верификация — просто идём дальше без пользователя
+      console.log('Invalid token in optional protect');
+    }
+  }
+
+  next();
+};
+
 // Check if token exists and is valid
 export const protect = (req, res, next) => {
   const authHeader = req.headers.authorization;

@@ -1,4 +1,71 @@
-import Venue from '../models/Venue.js';
+import axios from "axios";
+
+// Конфигурация Google Places
+const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+const GOOGLE_PLACES_URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
+
+  export const getVenues = async (req, res) => {
+    try {
+      const { source, lat, lng, radius } = req.query;
+  
+      if (!lat || !lng) {
+        return res.status(400).json({ message: 'Latitude and longitude required' });
+      }
+  
+      // Получаем Google Places всегда (независимо от токена)
+      const googleResponse = await axios.get(GOOGLE_PLACES_URL, {
+        params: {
+          location: `${lat},${lng}`,
+          radius: radius || 5000,
+          keyword: 'kids birthday party',
+          key: process.env.GOOGLE_MAPS_API_KEY
+        }
+      });
+  
+      const googlePlaces = googleResponse.data.results.map(place => ({
+        id: place.place_id,
+        name: place.name,
+        location: place.vicinity,
+        rating: place.rating,
+        types: place.types,
+        fromGoogle: true
+      }));
+  
+      // Если есть авторизация — добавляем локальные локации из БД
+      if (req.user) {
+        const savedVenues = await Venue.find({ owner: req.user._id });
+        return res.json({ googlePlaces, savedVenues });
+      }
+  
+      // Иначе возвращаем только Google Places (для публичных)
+      res.json({ googlePlaces });
+  
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server Error' });
+    }
+  };  
+
+// Получение конкретной локации и отзывов по ID
+export const getVenueById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const venue = await Venue.findById(id);
+
+    if (!venue) {
+      return res.status(404).json({ message: "Venue not found" });
+    }
+
+    const reviews = await Review.find({ venueId: id })
+      .populate("userId", "name") // подтягиваем имя пользователя
+      .sort({ createdAt: -1 }); // сортируем: свежие — выше
+
+    res.json({ venue, reviews }); // возвращаем оба
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 // создание новой локации
 export const createVenue = async (req, res) => {
@@ -14,72 +81,7 @@ export const createVenue = async (req, res) => {
 
     res.status(201).json(newVenue);
   } catch (error) {
-    console.error('Ошибка при создании локации:', error);
-    res.status(500).json({ message: 'Не удалось создать локацию' });
-  }
-};
-
-// Получение списка локаций с фильтрацией
-export const getVenues = async (req, res) => {
-  try {
-    // Извлекаем фильтры из query-параметров
-    const { location, minPrice, maxPrice, minCapacity, maxCapacity, themes, ageGroups } = req.query;
-
-    const filter = {};
-
-    if (location) {
-      filter.location = { $regex: location, $options: 'i' }; // регистронезависимый поиск по локации
-    }
-
-    if (minPrice || maxPrice) {
-      filter.price = {};
-      if (minPrice) filter.price.$gte = Number(minPrice);
-      if (maxPrice) filter.price.$lte = Number(maxPrice);
-    }
-
-    if (minCapacity || maxCapacity) {
-      filter.capacity = {};
-      if (minCapacity) filter.capacity.$gte = Number(minCapacity);
-      if (maxCapacity) filter.capacity.$lte = Number(maxCapacity);
-    }
-
-    if (themes) {
-      // themes - строка с темами, разделёнными запятыми
-      const themesArray = themes.split(',').map(t => t.trim());
-      filter.themes = { $in: themesArray };
-    }
-
-    if (ageGroups) {
-      const ageGroupsArray = ageGroups.split(',').map(a => a.trim());
-      filter.ageGroups = { $in: ageGroupsArray };
-    }
-
-    const venues = await Venue.find(filter);
-
-    res.json(venues);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-// Получение конкретной локации и отзывов по ID
-export const getVenueById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const venue = await Venue.findById(id);
-
-    if (!venue) {
-      return res.status(404).json({ message: 'Venue not found' });
-    }
-
-    const reviews = await Review.find({ venueId: id })
-      .populate('userId', 'name') // подтягиваем имя пользователя
-      .sort({ createdAt: -1 });   // сортируем: свежие — выше
-
-    res.json({ venue, reviews }); // возвращаем оба
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Ошибка при создании локации:", error);
+    res.status(500).json({ message: "Не удалось создать локацию" });
   }
 };

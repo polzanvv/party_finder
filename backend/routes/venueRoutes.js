@@ -1,10 +1,19 @@
-import express from 'express';
-import { getVenues, getVenueById, createVenue } from '../controllers/venueController.js';
-import { protect, restrictTo } from '../middleware/authMiddleware.js';
+import express from "express";
+import {
+  getVenues,
+  getVenueById,
+  createVenue,
+} from "../controllers/venueController.js";
+
+import { protectOptional, protect, restrictTo } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get('/', getVenues); // Public
-router.post('/', protect, restrictTo('owner'), createVenue); // Private
+// Public routes
+router.get('/', protectOptional, getVenues);
+
+// Protected routes
+router.post("/", protect, restrictTo("owner"), createVenue);
+router.get("/:id", getVenueById);
 
 export default router;
