@@ -1,8 +1,9 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authContext';
 
 const Header = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <header className="bg-white shadow p-4 flex justify-between items-center">
@@ -10,11 +11,17 @@ const Header = () => {
       <div>
         {user ? (
           <>
-            <span className="mr-4"> {user.name}</span>
-            <button onClick={logout} className="text-red-500 font-semibold">Logout</button>
+            <span className="mr-4">{user.name}</span>
+            <button onClick={() => {
+              logout();
+              navigate('/');
+            }} className="text-red-500 font-semibold">Logout</button>
           </>
         ) : (
-          <Link to="/login" className="text-blue-500 font-semibold">Login</Link>
+          // Передаем текущее местоположение как from
+          <Link to="/login" state={{ from: '/home' }} className="text-blue-500 font-semibold">
+            Login
+          </Link>
         )}
       </div>
     </header>

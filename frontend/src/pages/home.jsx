@@ -9,21 +9,20 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [coords, setCoords] = useState(null);
   const navigate = useNavigate();
+  const token = localStorage.getItem('token');
+  
   const handleVenueClick = (venue) => {
     if (!token) {
-      alert('Пожалуйста, зарегистрируйтесь или войдите в аккаунт, чтобы просмотреть детали');
-      navigate('/login'); // Или путь к регистрации
+      navigate('/login', { state: { from: `/venue/${venue._id || venue.place_id}`, venue } });
       return;
     }
     navigate(`/venue/${venue._id || venue.place_id}`, { state: { venue } });
   };
 
-  // For filtering
+  // Filtering
   const [filterText, setFilterText] = useState('');
   const [minRating, setMinRating] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
-
-  const token = localStorage.getItem('token');
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -59,7 +58,6 @@ const Home = () => {
 
         setGooglePlaces(res.data.googlePlaces || []);
         setSavedVenues(res.data.savedVenues || []);
-
       } catch (err) {
         setError('Error loading venues');
       } finally {
@@ -78,7 +76,7 @@ const Home = () => {
     .filter(place => (minRating ? place.rating >= parseFloat(minRating) : true))
     .filter(place => (typeFilter ? place.types?.includes(typeFilter) : true));
 
-  // Filtering saved venues (if token exists)
+  // Filtering saved venues (only if authenticated)
   const filteredSavedVenues = savedVenues
     .filter(venue =>
       venue.name.toLowerCase().includes(filterText.toLowerCase())
@@ -90,7 +88,7 @@ const Home = () => {
     <div className="min-h-screen bg-[url('/public/images/bg-home.jpg')] bg-cover bg-center bg-no-repeat relative overflow-hidden px-4 py-8">
       <div className="max-w-4xl mx-auto bg-white/80 backdrop-blur-md rounded-3xl shadow-xl p-6">
         {error && <p className="text-red-600 text-center text-lg">{error}</p>}
-        {!error && !coords && <p className="text-center text-gray-700">Determining your location...</p>}
+        {!error && !coords && <p className="text-center text-gray-700">Detecting your location...</p>}
         {loading && <p className="text-center text-gray-700">Loading venues...</p>}
 
         {/* Filters */}
@@ -108,7 +106,7 @@ const Home = () => {
             onChange={(e) => setMinRating(e.target.value)}
           >
             <option value="">All ratings</option>
-            {[5,4,3,2,1].map(r => (
+            {[5, 4, 3, 2, 1].map(r => (
               <option key={r} value={r}>{r} and up</option>
             ))}
           </select>
@@ -124,78 +122,51 @@ const Home = () => {
             <option value="park">Park</option>
             <option value="restaurant">Restaurant</option>
             <option value="school">School</option>
-            {/* Add other needed types here */}
           </select>
         </div>
 
-        {!loading && !error && !coords && <p className="text-center text-gray-700">Determining your location...</p>}
-
         {!loading && !error && coords && (
           <>
-            {!token && (
-              <>
-                {filteredGooglePlaces.length > 0 ? (
-                  <div>
-                    <h2 className="text-2xl font-bold text-rose-700 mb-4">Nearby Venues (Google Places)</h2>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      {filteredGooglePlaces.map((place) => (
-                        <div
-                          key={place.id}
-                          className="bg-white rounded-xl shadow-md p-4 transition-transform hover:scale-105"
-                        >
-                          <h3 className="text-xl font-semibold text-gray-800">{place.name}</h3>
-                          <p className="text-gray-600">{place.location || place.address || ''}</p>
-                          {place.rating && <p className="text-sm text-yellow-600">Rating: {place.rating}</p>}
-                        </div>
-                      ))}
+            {/* Google Places - visible to all users */}
+            {filteredGooglePlaces.length > 0 ? (
+              <div>
+                <h2 className="text-2xl font-bold text-rose-700 mb-4">Nearby Venues</h2>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {filteredGooglePlaces.map((place) => (
+                    <div
+                      key={place.id}
+                      onClick={() => handleVenueClick(place)}
+                      className="bg-white rounded-xl shadow-md p-4 transition-transform hover:scale-105 cursor-pointer"
+                    >
+                      <h3 className="text-xl font-semibold text-gray-800">{place.name}</h3>
+                      <p className="text-gray-600">{place.location || place.address || ''}</p>
+                      {place.rating && <p className="text-sm text-yellow-600">Rating: {place.rating}</p>}
                     </div>
-                  </div>
-                ) : (
-                  <p className="text-center text-gray-700">No venues available</p>
-                )}
-              </>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-center text-gray-700">No venues available</p>
             )}
 
-            {token && (
-              <>
-                {filteredSavedVenues.length > 0 && (
-                  <div className="mb-10">
-                    <h2 className="text-2xl font-bold text-teal-700 mb-4">Saved Venues</h2>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      {filteredSavedVenues.map((venue) => (
-                        <div
-                          key={venue._id}
-                          onClick={() => handleVenueClick(venue)}
-                          className="bg-white rounded-xl shadow-md p-4 transition-transform hover:scale-105"
-                        >
-                          <h3 className="text-xl font-semibold text-gray-800">{venue.name}</h3>
-                          <p className="text-gray-600">{venue.address}</p>
-                          {venue.rating && <p className="text-sm text-yellow-600">Rating: {venue.rating}</p>}
-                        </div>
-                      ))}
+            {/* Saved Venues - visible only to authenticated users */}
+            {token && filteredSavedVenues.length > 0 && (
+              <div className="mt-10">
+                <h2 className="text-2xl font-bold text-teal-700 mb-4">Your Saved Venues</h2>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {filteredSavedVenues.map((venue) => (
+                    <div
+                      key={venue._id}
+                      onClick={() => handleVenueClick(venue)}
+                      className="bg-white rounded-xl shadow-md p-4 transition-transform hover:scale-105 cursor-pointer"
+                    >
+                      <h3 className="text-xl font-semibold text-gray-800">{venue.name}</h3>
+                      <p className="text-gray-600">{venue.address}</p>
+                      {venue.rating && <p className="text-sm text-yellow-600">Rating: {venue.rating}</p>}
                     </div>
-                  </div>
-                )}
-
-                {filteredGooglePlaces.length > 0 && (
-                  <div>
-                    <h2 className="text-2xl font-bold text-rose-700 mb-4">Nearby Venues (Google Places)</h2>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      {filteredGooglePlaces.map((place) => (
-                        <div
-                          key={place.id}
-                          onClick={() => handleVenueClick(place)}
-                          className="bg-white rounded-xl shadow-md p-4 transition-transform hover:scale-105"
-                        >
-                          <h3 className="text-xl font-semibold text-gray-800">{place.name}</h3>
-                          <p className="text-gray-600">{place.location || place.address || ''}</p>
-                          {place.rating && <p className="text-sm text-yellow-600">Rating: {place.rating}</p>}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </>
+                  ))}
+                </div>
+              </div>
             )}
           </>
         )}
