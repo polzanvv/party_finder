@@ -60,7 +60,7 @@ export const getReviewsForVenue = async (req, res) => {
       return res.status(404).json({ message: "Venue not found" });
     }
     const reviews = await Review.find({
-      venueId: mongoose.Types.ObjectId(venueId),
+      venueId: new mongoose.Types.ObjectId(venueId),
     }).populate("userId", "name");
 
     res.status(200).json(reviews);
