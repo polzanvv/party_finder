@@ -4,7 +4,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha",
     "dev": "node server.js"
   },
   "keywords": [],
@@ -21,6 +21,11 @@
     "mongoose": "^8.15.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "chai": "^5.2.0",
+    "esm": "^3.2.25",
+    "mocha": "^11.6.0",
+    "nodemon": "^3.1.10",
+    "sinon": "^20.0.0",
+    "supertest": "^7.1.1"
   }
 }

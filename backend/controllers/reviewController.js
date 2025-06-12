@@ -59,13 +59,6 @@ export const getReviewsForVenue = async (req, res) => {
     if (!venue) {
       return res.status(404).json({ message: "Venue not found" });
     }
-    console.log("Searching reviews for venueId:", venueId);
-    console.log("Type of venueId param:", typeof venueId);
-    console.log(
-      "Type of mongoose.Types.ObjectId(venueId):",
-      typeof mongoose.Types.ObjectId(venueId)
-    );
-
     const reviews = await Review.find({
       venueId: mongoose.Types.ObjectId(venueId),
     }).populate("userId", "name");
