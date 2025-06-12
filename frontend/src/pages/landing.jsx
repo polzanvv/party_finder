@@ -4,7 +4,7 @@ const Landing = () => {
   const navigate = useNavigate();
 
   const handleOwnerClick = () => {
-    alert('Страница находится в разработке');
+    alert('We’re working on it — check back soon');
   };
 
   const handleParentClick = () => {

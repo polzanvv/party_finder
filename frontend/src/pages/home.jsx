@@ -81,7 +81,7 @@ const Home = () => {
 
         venue = res.data.venue;
       } catch (err) {
-        console.error('Ошибка при сохранении venue:', err);
+        console.error('Error while saving venue:', err);
         return;
       }
     }
