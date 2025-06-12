@@ -1,12 +1,15 @@
 import mongoose from 'mongoose';
 
 const bookingSchema = new mongoose.Schema({
-  venueId: {
-    type: String,
+  userId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User', 
     required: true,
   },
-  venueName: {
-    type: String,
+  venueId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Venue',
+    required: true,
   },
   name: {
     type: String,
@@ -16,12 +19,17 @@ const bookingSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  date: {
-    type: String, // либо Date, если хочешь
+  venueName: {
+    type: String,
+    required: true,
+  },
+  bookingDateTime: {
+    type: Date,
     required: true,
   },
   notes: {
     type: String,
+    default: '',
   },
   createdAt: {
     type: Date,

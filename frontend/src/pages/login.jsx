@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/authContext';
 import axios from 'axios';
 
@@ -8,12 +8,9 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const location = useLocation();
   const { login } = useAuth();
 
-  // 📍 Откуда пришёл пользователь
-  const from = location.state?.from;
-  const venue = location.state?.venue;
+  const from = '/home';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,13 +19,10 @@ const Login = () => {
         email,
         password,
       });
-  
+
       login(res.data.user, res.data.token);
-      if (from) {
-        navigate(from, venue ? { state: { venue } } : undefined);
-      } else {
-        navigate('/home');
-      }
+
+      navigate(from);
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
     }
@@ -65,7 +59,6 @@ const Login = () => {
           </button>
         </form>
 
-        {/* 🔁 Ссылка на регистрацию (передаём from в register) */}
         <p className="mt-4 text-center text-sm">
           Don't have an account?{' '}
           <Link to="/register" state={{ from }} className="text-blue-500 hover:underline">
@@ -73,10 +66,9 @@ const Login = () => {
           </Link>
         </p>
 
-        {/* 🔙 Кнопка Back */}
         <div className="mt-4 text-center">
           <button
-            onClick={() => navigate(from || '/home')}
+            onClick={() => navigate('/venues')}
             className="text-gray-600 hover:underline text-sm"
           >
             Back

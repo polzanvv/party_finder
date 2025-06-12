@@ -1,62 +1,78 @@
-import Review from '../models/review.js';
+import Review from "../models/review.js";
+import Venue from "../models/venue.js";
+import mongoose from "mongoose";
 
-// Добавление отзыва
 export const addReview = async (req, res) => {
   try {
     const { venueId, rating, comment } = req.body;
     const userId = req.user._id;
 
-    if (!venueId || !rating) {
-      return res
-        .status(400)
-        .json({ message: 'Venue ID and rating are required' });
+    if (!venueId || !rating || !comment) {
+      return res.status(400).json({ message: "Required data is missing" });
     }
 
-    const existingReview = await Review.findOne({ venueId, userId });
-    if (existingReview) {
-      return res
-        .status(400)
-        .json({ message: 'You have already reviewed this venue' });
+    const venue = await Venue.findById(venueId);
+    if (!venue) {
+      return res.status(404).json({ message: "Venue not found" });
     }
 
     const newReview = new Review({
       venueId,
       userId,
       rating,
-      comment
+      comment,
     });
 
     await newReview.save();
 
-    // Update average rating
-    const reviews = await Review.find({ venueId });
-    const avgRating =
-      reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+    const allReviews = await Review.find({ venueId });
+    const averageRating =
+      allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
 
-    await Venue.findByIdAndUpdate(venueId, { averageRating: avgRating });
+    venue.averageRating = averageRating;
+    await venue.save();
+
+    const populatedReview = await Review.findById(newReview._id).populate(
+      "userId",
+      "name"
+    );
 
     res.status(201).json({
-      message: 'Review added successfully',
-      review: newReview,
-      averageRating: avgRating
+      review: populatedReview,
+      averageRating,
     });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+  } catch (err) {
+    console.error("Error adding review:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-// Получение всех отзывов для локации
 export const getReviewsForVenue = async (req, res) => {
   try {
     const { venueId } = req.params;
-    if (!venueId) return res.status(400).json({ message: 'Venue ID is required' });
 
-    const reviews = await Review.find({ venueId }).populate('userId', 'name');
+    if (!mongoose.Types.ObjectId.isValid(venueId)) {
+      return res.status(400).json({ message: "Invalid venue ID" });
+    }
 
-    res.json(reviews);
+    const venue = await Venue.findById(venueId);
+    if (!venue) {
+      return res.status(404).json({ message: "Venue not found" });
+    }
+    console.log("Searching reviews for venueId:", venueId);
+    console.log("Type of venueId param:", typeof venueId);
+    console.log(
+      "Type of mongoose.Types.ObjectId(venueId):",
+      typeof mongoose.Types.ObjectId(venueId)
+    );
+
+    const reviews = await Review.find({
+      venueId: mongoose.Types.ObjectId(venueId),
+    }).populate("userId", "name");
+
+    res.status(200).json(reviews);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error fetching reviews:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };

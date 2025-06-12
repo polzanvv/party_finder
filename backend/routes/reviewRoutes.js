@@ -1,13 +1,12 @@
 import express from 'express';
-import { addReview, getReviewsForVenue } from '../controllers/reviewController.js';
+import { addReview, getReviewsForVenue, deleteReview } from '../controllers/reviewController.js';
 import { protect, restrictTo } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// 🔒 Protected route: only logged-in "parent" users can add reviews
 router.post('/', protect, restrictTo('parent'), addReview);
+router.delete("/:id", protect, restrictTo('parent'), deleteReview);
 
-// 🌍 Public route: anyone can view reviews for a venue
 router.get('/:venueId', getReviewsForVenue);
 
-export default router;
+export default router;  

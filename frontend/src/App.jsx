@@ -7,6 +7,7 @@ import Login from './pages/login';
 import ProtectedRoute from './components/protectedRoute';
 import VenueDetails from './pages/venueDetails';
 import { AuthProvider } from './context/authContext';
+import MyBookings from './pages/myBookings';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/venue/:id" element={ <ProtectedRoute> <VenueDetails /> </ProtectedRoute>}/>
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/my-bookings" element={<MyBookings />} />
         </Routes>
       </Router>
     </AuthProvider>

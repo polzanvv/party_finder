@@ -17,7 +17,7 @@ export const register = async (req, res) => {
     const newUser = new User({
       name,
       email,
-      password, // Will be hashed automatically
+      password,
       role: role || 'parent'
     });
     

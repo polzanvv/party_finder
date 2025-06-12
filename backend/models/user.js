@@ -8,7 +8,6 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['parent', 'owner'], default: 'parent' }
 });
 
-// 🔐 Hash password before saving
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   try {
@@ -19,7 +18,6 @@ userSchema.pre('save', async function (next) {
   }
 });
 
-// ✅ Add method to compare passwords during login
 userSchema.methods.comparePassword = function (enteredPassword) {
   return bcrypt.compare(enteredPassword, this.password);
 };

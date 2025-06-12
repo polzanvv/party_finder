@@ -11,14 +11,23 @@ const Header = () => {
       <div>
         {user ? (
           <>
-            <span className="mr-4">{user.name}</span>
-            <button onClick={() => {
-              logout();
-              navigate('/');
-            }} className="text-red-500 font-semibold">Logout</button>
+            <button
+              onClick={() => navigate('/my-bookings')}
+              className="mr-4 text-purple-600 font-semibold hover:underline"
+            >
+              {user.name}
+            </button>
+            <button
+              onClick={() => {
+                logout();
+                navigate('/');
+              }}
+              className="text-red-500 font-semibold"
+            >
+              Logout
+            </button>
           </>
         ) : (
-          // Передаем текущее местоположение как from
           <Link to="/login" state={{ from: '/home' }} className="text-blue-500 font-semibold">
             Login
           </Link>

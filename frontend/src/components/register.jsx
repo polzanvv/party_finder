@@ -10,7 +10,6 @@ const Register = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 📍 Откуда пришёл пользователь
   const from = location.state?.from;
 
   const handleSubmit = async (e) => {
@@ -24,7 +23,6 @@ const Register = () => {
         password,
       });
 
-      // ➡️ Переход на логин + передаём from
       navigate('/login', { state: { from } });
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
@@ -75,7 +73,6 @@ const Register = () => {
           </button>
         </form>
 
-        {/* 🔙 Кнопка "Back" */}
         <div className="mt-4 text-center">
           <button
             onClick={() => navigate(from || '/home')}
