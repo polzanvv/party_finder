@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 const Home = () => {
   const [venues, setVenues] = useState([]);
   const [error, setError] = useState(null);
@@ -41,7 +43,7 @@ const Home = () => {
       setError(null);
 
       try {
-        const res = await axios.get('http://localhost:5000/api/venues', {
+        const res = await axios.get(`${API_URL}/venues`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
           params: { lat: coords.lat, lng: coords.lng, radius: 7000 },
         });
@@ -70,7 +72,7 @@ const Home = () => {
 
     if (!venue._id && venue.place_id) {
       try {
-        const res = await axios.post('http://localhost:5000/api/venues', {
+        const res = await axios.post(`${API_URL}/venues`, {
           googlePlaceId: venue.place_id,
           name: venue.name,
           location: venue.vicinity || venue.location,

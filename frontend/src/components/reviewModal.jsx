@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 const ReviewModal = ({ isOpen, venue, onClose, onReviewSubmitted }) => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
@@ -24,7 +26,7 @@ const ReviewModal = ({ isOpen, venue, onClose, onReviewSubmitted }) => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/reviews",
+        `${API_URL}/reviews`,
         {
           venueId: venue?._id,
           rating,

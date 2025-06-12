@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -8,7 +10,7 @@ const MyBookings = () => {
   const fetchBookings = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/bookings/my', {
+      const res = await axios.get(`${API_URL}/bookings/my`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setBookings(res.data);
@@ -23,7 +25,7 @@ const MyBookings = () => {
     if (!window.confirm('Are you sure you want to cancel this booking?')) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/bookings/${bookingId}`, {
+      await axios.delete(`${API_URL}/bookings/${bookingId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setBookings((prev) => prev.filter((b) => b._id !== bookingId));

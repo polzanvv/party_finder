@@ -5,6 +5,8 @@ import axios from "axios";
 import BookingModal from "../components/bookingModal";
 import ReviewModal from "../components/reviewModal";
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 const VenueDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -38,7 +40,7 @@ const VenueDetails = () => {
         setLoadingVenue(true);
 
         const mongoRes = await axios.get(
-          `http://localhost:5000/api/venues/${id}`,
+          `${API_URL}/venues/${id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -50,11 +52,11 @@ const VenueDetails = () => {
           const token = localStorage.getItem("token");
 
           const googleRes = await axios.get(
-            `http://localhost:5000/api/google-venues/${id}`
+            `${API_URL}/google-venues/${id}`
           );
 
           const saveRes = await axios.post(
-            "http://localhost:5000/api/venues/save",
+            `${API_URL}/venues/save`,
             { venueFromGoogle: googleRes.data },
             {
               headers: { Authorization: `Bearer ${token}` },
@@ -86,7 +88,7 @@ const VenueDetails = () => {
       try {
         setLoadingReviews(true);
         const res = await axios.get(
-          `http://localhost:5000/api/reviews/${venueId}`
+          `${API_URL}/reviews/${venueId}`
         );
         setReviews(res.data);
       } catch (err) {
@@ -118,7 +120,7 @@ const VenueDetails = () => {
       const venueId = venue?.venue?._id;
 
       await axios.post(
-        "http://localhost:5000/api/bookings",
+        `${API_URL}/bookings`,
         {
           venueId,
           name,
