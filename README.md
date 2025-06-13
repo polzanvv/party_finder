@@ -22,7 +22,6 @@ Logged-in users can leave reviews and make bookings.
 
 ### 1. Clone the repository
 
-```bash
 git clone https://github.com/yourusername/party-finder.git
 cd party-finder
 
